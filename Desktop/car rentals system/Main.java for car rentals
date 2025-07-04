@@ -1,0 +1,310 @@
+package car.rental.system;
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+//main class
+   public class Main {  
+       public static class Car {
+    //attributes
+    String carID;
+    String brand;
+    String model;
+    int numSeats;
+    double pricePerDay;
+    boolean isAvailable;
+    
+    //constructor
+    public Car(String carID,String brand,String model,int numSeats,double pricePerDay) {
+        this.carID=carID;
+        this.brand=brand;
+        this.model=model;
+        this.numSeats=numSeats;
+        this.pricePerDay=pricePerDay;
+        this.isAvailable=true;//cars are available by default
+    }
+    
+    //getters
+    public String getCarID() { return carID; }
+    public String getBrand() { return brand; }
+    public String getModel() { return model; }
+    public int getSeats() { return numSeats; }
+    public double getPricePerDay() { return pricePerDay; }
+    public boolean isAvailable() { return isAvailable; }
+    
+    //method to set availability
+    public void setAvailability(boolean status) {
+        this.isAvailable=status;
+    }
+    
+    public void displayCarInfo() {
+        System.out.println("ID: "+carID+", Brand: "+brand+", Model: "+model+", Seats: "+numSeats+", Price per day: "+pricePerDay+", Available: "+(isAvailable ? "yes" : "No"));
+}    
+    }
+       
+       //customer class
+    public static class Customer {
+    //attributes                                                                                                                                                                  
+    private final String username;
+    private final String customerID;
+    private final ArrayList<Rental> rentalInfo;
+    
+    //constructor
+    public Customer(String username, String password, String customerID) {
+        this.username = username;
+        this.customerID=customerID;
+        this.rentalInfo = new ArrayList<>();
+    }
+    
+    //getter
+    public String getCustomerID() { return customerID; }
+    public String getuserName() { return username; }
+
+    //add rental to customer
+    public void addRental(Rental rental) {
+        rentalInfo.add(rental);
+    }
+
+    public void displayRentalInfo() {
+        if (rentalInfo.isEmpty()) {
+            System.out.println("No rentals found.");
+        } else {
+            for (Rental r : rentalInfo) {
+                r.displayRentalInfo();
+            }
+        }
+    }
+
+    //returns true if rental with this carID found and removed
+        public boolean returnRental(String carID) {
+           for (int i = 0; i < rentalInfo.size(); i++) {
+            Rental r = rentalInfo.get(i);
+            if (r.getCar().getCarID().equals(carID)) {
+                rentalInfo.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void viewRentals() {
+        displayRentalInfo();
+    }
+}
+  
+    //rental class
+public static class Rental {
+    private final Car car;
+    private final int days;
+    private final double totalCost;
+
+    //constructor
+    public Rental(Car car, int days) {
+        this.car = car;
+        this.days = days;
+        this.totalCost = car.getPricePerDay() * days;
+    }
+    
+    // method to print info 
+    public void displayRentalInfo() {
+        System.out.println("Car: " + car.getBrand() + " " + car.getModel() +
+            ", Days: " + days + ", Total Cost: KES " + totalCost);
+    }
+    
+    public Car getCar() {
+        return car;
+    }
+}            
+
+ public static class RentalAgency {
+    private final ArrayList<Car> carList;
+    private final ArrayList<Customer> customerList;
+
+    // Constructor with agency name
+    public RentalAgency(String agencyName) {
+        carList = new ArrayList<>();
+        customerList = new ArrayList<>();
+    }
+
+    // Add a car to the system
+    public void addCar(Car car) {
+        carList.add(car);
+    }
+
+    // Add a customer to the system
+    public void addCustomer(Customer customer) {
+        customerList.add(customer);
+    }
+
+    // Display available cars
+    public void showAvailableCars() {
+        for (Car car : carList) {
+            if (car.isAvailable()) {
+                car.displayCarInfo();
+            }
+        }
+    }
+
+    // Find customer by ID
+    public Customer findCustomer(String customerID) {
+        for (Customer c : customerList) {
+            if (c.getCustomerID().equals(customerID)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    // Find car by ID
+    public Car findCar(String carID) {
+        for (Car c : carList) {
+            if (c.getCarID().equals(carID)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    // Rent a car to a customer
+    public boolean rentCar(String customerID, String carID) {
+        Customer customer = findCustomer(customerID);
+        Car car = findCar(carID);
+        if (customer != null && car != null && !car.isAvailable()) {
+        if (customer.returnRental(carID)) {
+            car.setAvailability(true);
+            return true;
+        }
+    }
+    return false;
+}
+        
+
+    // Return a car
+    public boolean returnCar(String carID) {
+        Car car = findCar(carID);
+        if (car != null && !car.isAvailable()) {
+            car.setAvailability(true);
+            return true;
+        }
+        return false;
+    }
+
+        //method called from main
+        public void viewAvailableCars() {
+           showAvailableCars();
+    }
+ 
+        //method called from main
+        public Car findCarById(String carID) {
+            return findCar(carID);
+    }
+}
+        public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        RentalAgency agency = new RentalAgency("Elite Rentals");
+
+        // Sample cars
+        agency.addCar(new Car("C001", "Toyota", "Vitz", 4, 2500.0));
+        agency.addCar(new Car("C002", "Honda", "Fit", 4, 2700.0));
+        agency.addCar(new Car("C003", "Nissan", "Caravan",  15, 5000.0));
+
+        // Dummy login credentials
+        String correctUsername = "user123";
+        String correctPassword = "pass123";
+
+        int attempts = 0;
+        boolean loggedIn = false;
+
+        while (attempts < 3) {
+            System.out.print("Enter username: ");
+            String username = scanner.nextLine();
+
+            System.out.print("Enter password: ");
+            String password = scanner.nextLine(); // (Simplified input for time)
+
+            // Show password as stars
+            for (int i = 0; i < password.length(); i++) {
+                System.out.print("*");
+            }
+            System.out.println(); // Move to next line
+
+            if (username.equals(correctUsername) && password.equals(correctPassword)) {
+                loggedIn = true;
+                break;
+            } else {
+                System.out.println("Incorrect username or password. Try again.");
+                attempts++;
+            }
+        }
+
+        if (!loggedIn) {
+            System.out.println("Too many failed attempts. Exiting...");
+            return;
+        }
+
+        // Successful login
+        //fixed constructor parameters: username, password, customerID
+        Customer customer = new Customer("user123", "pass123", "CU001");
+        agency.addCustomer(customer);  // Add this customer to agency for completeness
+
+        while (true) {
+            System.out.println("\n--- Car Rental Menu ---");
+            System.out.println("1. View Available Cars");
+            System.out.println("2. Rent a Car");
+            System.out.println("3. Return a Car");
+            System.out.println("4. View My Rental Details");
+            System.out.println("5. Exit");
+            System.out.print("Choose an option: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Clear buffer
+
+            switch (choice) {
+                case 1 -> agency.viewAvailableCars();
+
+                case 2 -> {
+                    System.out.print("Enter Car ID to rent: ");
+                    String carId = scanner.nextLine();
+                    Car carToRent = agency.findCarById(carId);
+
+                    if (carToRent != null && carToRent.isAvailable()) {
+                        System.out.print("Enter number of rental days: ");
+                        int days = scanner.nextInt();
+                        scanner.nextLine(); // Clear buffer
+
+                        Rental rental = new Rental(carToRent, days);
+                        customer.addRental(rental);
+                        carToRent.setAvailability(false);
+                        System.out.println("Car rented successfully!");
+                    } else {
+                        System.out.println("Car not available or does not exist.");
+                    }
+                }
+
+                case 3 -> {
+                    System.out.print("Enter Car ID to return: ");
+                    String returnCarId = scanner.nextLine();
+                    boolean returned = customer.returnRental(returnCarId);
+                    if (returned) {
+                        agency.findCarById(returnCarId).setAvailability(true);
+                        System.out.println("Car returned successfully.");
+                    } else {
+                        System.out.println("You did not rent this car.");
+                    }
+                }
+
+                case 4 -> customer.viewRentals();
+
+                case 5 -> {
+                    System.out.println("Exiting system. Thank you!");
+                    return;
+                }
+
+                default -> System.out.println("Invalid choice. Try again.");
+            }
+        }
+    }
+}
+    
+
+
+
